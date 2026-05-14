@@ -1,4 +1,3 @@
-```js
 const express = require("express");
 const app = express();
 
@@ -9,9 +8,7 @@ app.get("/", (req, res) => {
 app.listen(3000, () => {
   console.log("Web server running.");
 });
-```
 
-```js
 require("dotenv").config();
 
 const {
@@ -53,12 +50,6 @@ client.on("messageCreate", async (message) => {
     if (!brokenRule) return;
 
     const member = message.member;
-
-    if (!member) {
-      console.log("Member not found.");
-      return;
-    }
-
     const bannedRole = message.guild.roles.cache.get(process.env.BANNED_ROLE_ID);
 
     if (!bannedRole) {
@@ -66,29 +57,20 @@ client.on("messageCreate", async (message) => {
       return;
     }
 
-    if (
-      !message.guild.members.me.permissions.has(
-        PermissionsBitField.Flags.ManageRoles
-      )
-    ) {
+    if (!message.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
       console.log("Bot missing Manage Roles permission.");
       return;
     }
 
     await member.roles.add(bannedRole);
+    await message.delete().catch(() => {});
 
     console.log(`Assigned banned role to ${member.user.tag}`);
 
-    await message.delete().catch(() => {});
-
-    const logChannel = message.guild.channels.cache.get(
-      process.env.LOG_CHANNEL_ID
-    );
+    const logChannel = message.guild.channels.cache.get(process.env.LOG_CHANNEL_ID);
 
     if (logChannel) {
-      logChannel.send(
-        `🚫 ${member.user.tag} was given the BANNED role.\nReason: ${brokenRule}`
-      );
+      logChannel.send(`🚫 ${member.user.tag} was given the BANNED role.\nReason: ${brokenRule}`);
     }
   } catch (err) {
     console.error(err);
@@ -96,4 +78,3 @@ client.on("messageCreate", async (message) => {
 });
 
 client.login(process.env.BOT_TOKEN);
-```
