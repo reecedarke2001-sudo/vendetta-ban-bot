@@ -1,3 +1,4 @@
+```js
 require("dotenv").config();
 
 const {
@@ -11,47 +12,73 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
   ],
 });
 
 const bannedTriggers = [
-  "discord.gg/",
   "free nitro",
-  "nigger",
-"expected",
+  "discord.gg/",
+  "badword1",
 ];
 
-client.once("ready", () => {
+client.once("clientReady", () => {
   console.log(`Logged in as ${client.user.tag}`);
 });
 
 client.on("messageCreate", async (message) => {
-  if (!message.guild) return;
-  if (message.author.bot) return;
+  try {
+    if (!message.guild) return;
+    if (message.author.bot) return;
 
-  const content = message.content.toLowerCase();
+    const content = message.content.toLowerCase();
 
-  const brokenRule = bannedTriggers.find((trigger) =>
-    content.includes(trigger.toLowerCase())
-  );
-
-  if (!brokenRule) return;
-
-  const member = message.member;
-  const bannedRole = message.guild.roles.cache.get(process.env.BANNED_ROLE_ID);
-
-  if (!bannedRole) return;
-
-  await member.roles.add(bannedRole);
-
-  await message.delete().catch(() => {});
-
-  const logChannel = message.guild.channels.cache.get(process.env.LOG_CHANNEL_ID);
-
-  if (logChannel) {
-    logChannel.send(
-      `🚫 ${member.user.tag} was given the BANNED role.\nReason: ${brokenRule}`
+    const brokenRule = bannedTriggers.find(trigger =>
+      content.includes(trigger.toLowerCase())
     );
+
+    if (!brokenRule) return;
+
+    const member = message.member;
+
+    if (!member) {
+      console.log("Member not found.");
+      return;
+    }
+
+    const bannedRole = message.guild.roles.cache.get(process.env.BANNED_ROLE_ID);
+
+    if (!bannedRole) {
+      console.log("BANNED role not found.");
+      return;
+    }
+
+    if (
+      !message.guild.members.me.permissions.has(
+        PermissionsBitField.Flags.ManageRoles
+      )
+    ) {
+      console.log("Bot missing Manage Roles permission.");
+      return;
+    }
+
+    await member.roles.add(bannedRole);
+
+    console.log(`Assigned banned role to ${member.user.tag}`);
+
+    await message.delete().catch(() => {});
+
+    const logChannel = message.guild.channels.cache.get(
+      process.env.LOG_CHANNEL_ID
+    );
+
+    if (logChannel) {
+      logChannel.send(
+        `🚫 ${member.user.tag} was given the BANNED role.\nReason: ${brokenRule}`
+      );
+    }
+  } catch (err) {
+    console.error(err);
   }
 });
 
