@@ -31,7 +31,7 @@ client.on("messageCreate", async (message) => {
     if (message.author.bot) return;
     if (!message.guild) return;
 
-    console.log("MESSAGE:", message.content);
+    console.log("MESSAGE: " + message.content);
 
     if (message.content === "!testban") {
       const role = message.guild.roles.cache.get(process.env.BANNED_ROLE_ID);
@@ -41,17 +41,12 @@ client.on("messageCreate", async (message) => {
         return;
       }
 
-      if (
-        !message.guild.members.me.permissions.has(
-          PermissionsBitField.Flags.ManageRoles
-        )
-      ) {
+      if (!message.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
         console.log("NO MANAGE ROLES PERMISSION");
         return;
       }
 
       await message.member.roles.add(role);
-
       console.log("ROLE ADDED");
     }
   } catch (err) {
@@ -60,4 +55,3 @@ client.on("messageCreate", async (message) => {
 });
 
 client.login(process.env.BOT_TOKEN);
-```
